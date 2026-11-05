@@ -1,0 +1,96 @@
+{
+  "v": "1.1.0",
+  "note": "자동 업데이트, API 없이 쓰기, 자막 저장 위치·bin, 따로 번역",
+  "installer": 1,
+  "released": "2026-11-05",
+  "files": [
+    {
+      "path": "server/app-version.json",
+      "sha256": "b16e7e824e4fd9815f2a177c1bd5089956cbf7b846c3a1c7838a865afdf4a747"
+    },
+    {
+      "path": "server/pipeline/dictionary.json",
+      "sha256": "7dc2095cb13d145bd31e23b027cb028645942fd0ab20d7ca386181c49df46e13"
+    },
+    {
+      "path": "server/pipeline/known-hallucinations.json",
+      "sha256": "689b24a86ce58692d67476df26490d8bd76266aac0c92180dc0f88d29d6921dd"
+    },
+    {
+      "path": "server/pipeline/known-terms.json",
+      "sha256": "60e5d146b01f10ffa15dee1650e330e9660315e7a721d56603e16861dc28dfe4"
+    },
+    {
+      "path": "server/pipeline/license.js",
+      "sha256": "d465d6cbfbbbc4392760eb557887d99863d8707f77dbb8265383ae06627ac326"
+    },
+    {
+      "path": "server/pipeline/llm-correction.js",
+      "sha256": "76e6eac03c420984d3c755e6c92123af45c431ee1b46242ebe89d3eb18b428c6"
+    },
+    {
+      "path": "server/pipeline/llm.json",
+      "sha256": "719dc23b2467b07a2d162909d1461a5abdaded3808d7b333ab384c5d4fca4464"
+    },
+    {
+      "path": "server/pipeline/patch_av_compat.py",
+      "sha256": "48d85b45fe4b237a61259e6f0568de85b94c1f5806ea9f44fbfd60d831889ade"
+    },
+    {
+      "path": "server/pipeline/proper-noun-translations.json",
+      "sha256": "d1861fc3ea6bebda040e69db05b59b3a5b200a6753d15516adcbb5b3c3c8a41a"
+    },
+    {
+      "path": "server/pipeline/public-key.pem",
+      "sha256": "a57e908d6bad5da578705a69ee147f11b3a8da5d40dc51ddc70efe0a3a4f05da"
+    },
+    {
+      "path": "server/pipeline/run_whisper_batch.py",
+      "sha256": "c1d1ec2a78e751521694d2c6148b377c4141f991c866e4958112968825ca148c"
+    },
+    {
+      "path": "server/pipeline/style-presets.json",
+      "sha256": "53c84910325aa21f8b252ccdb491504c45d510602e00fe8b088e251cbfaf7ee0"
+    },
+    {
+      "path": "server/pipeline/whisper-pipeline.js",
+      "sha256": "60bd1d7b8cb7f4163f6099b28bede2268cb2567d83666f756751986b2774bb95"
+    },
+    {
+      "path": "server/server.js",
+      "sha256": "8abfbd22de6f2b1022c4eadd0015b8960a7fab368b2a97c5675067ba2fba0255"
+    },
+    {
+      "path": "server/start-server.bat",
+      "sha256": "2204d3b610e59b1326699ccbbab6aff5d77612aa3a0f5f12c65e029cf709781a"
+    },
+    {
+      "path": "server/updater.js",
+      "sha256": "6b32802856b8e0c4eccfc755c33d604a63cddb4ab963e328d4e85a4d83ad67d5"
+    },
+    {
+      "path": "server/updater.ps1",
+      "sha256": "34cfcbeb074bde57badc9c66d3c26b59d782dd1d4a33d0c6fda5cfdf3134d8b6"
+    },
+    {
+      "path": "plugin/index.html",
+      "sha256": "e0b323cfd95f269deafed9b52122316f35ba5d5623d0fa950e1c61d94acb69b9"
+    },
+    {
+      "path": "plugin/main.js",
+      "sha256": "436a0d4cf361f746762311c0dae0273c3e14935352a956ef2bf553f47c0e40da"
+    },
+    {
+      "path": "plugin/manifest.json",
+      "sha256": "767d03ad34a505df3769c3407b85885f9d834e8f954438a8625bddbc4fb8f756"
+    },
+    {
+      "path": "plugin/presets/audio_only.epr",
+      "sha256": "ab15896a834e6e5c264c3e3df0d1e5301afb39fc3b9603f308fb76e0b2a5797f"
+    },
+    {
+      "path": "plugin/style.css",
+      "sha256": "51ca7390f06a4878a8a1eebc240868f99eb4333214ed4719aa0851885c40c949"
+    }
+  ]
+}

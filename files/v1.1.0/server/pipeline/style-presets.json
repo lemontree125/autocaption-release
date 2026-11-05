@@ -1,0 +1,36 @@
+{
+  "default": {
+    "fontFamily": "Noto Sans KR",
+    "fontWeight": "Bold",
+    "fontSizePercentOfHeight": 5.5,
+    "letterSpacing": -20,
+    "lineSpacing": 1.15,
+    "fillColor": "#FFFFFF",
+    "strokeColor": "#000000",
+    "strokeWidth": 3,
+    "position": "bottom",
+    "marginBottomPercent": 8,
+    "maxWidthPercent": 80,
+    "responsive": {
+      "referenceResolution": [1920, 1080],
+      "scaleWithSequenceSize": true
+    }
+  },
+  "shorts_9x16": {
+    "fontFamily": "Noto Sans KR",
+    "fontWeight": "Black",
+    "fontSizePercentOfHeight": 4.2,
+    "letterSpacing": -10,
+    "lineSpacing": 1.2,
+    "fillColor": "#FFFFFF",
+    "strokeColor": "#000000",
+    "strokeWidth": 4,
+    "position": "bottom",
+    "marginBottomPercent": 14,
+    "maxWidthPercent": 88,
+    "responsive": {
+      "referenceResolution": [1080, 1920],
+      "scaleWithSequenceSize": true
+    }
+  }
+}

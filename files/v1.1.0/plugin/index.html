@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ===== 라이선스 등록 화면 — 등록 전엔 이 화면만 보이고 아래 appRoot는 숨겨짐 ===== -->
+  <div id="licenseGate" class="lic-gate" hidden>
+    <div class="lic-gate-card">
+      <div class="lic-gate-word">AutoCaption</div>
+      <div class="lic-gate-title">처음 한 번만 라이선스 키를 등록해주세요</div>
+      <div class="lic-gstep"><span class="lic-num">1</span><span>아래 <b>기기 코드</b>를 복사해서 관리자에게 보내주세요.</span></div>
+      <div class="lic-code"><code id="licGateDevice">확인 중…</code><button id="licGateCopy" type="button">복사</button></div>
+      <div class="lic-gstep"><span class="lic-num">2</span><span>답장으로 받은 <b>키</b>를 붙여넣고 [등록]을 누르세요.</span></div>
+      <textarea id="licGateKey" rows="4" spellcheck="false" placeholder="AUTOCAPTION-로 시작하는 키를 붙여넣기"></textarea>
+      <button id="licGateOk" type="button" class="primary wide">등록</button>
+      <p id="licGateMsg" class="lic-gate-msg" role="status" aria-live="polite"></p>
+      <p class="lic-gate-foot">키는 이 컴퓨터에서만 쓸 수 있어요. 다른 컴퓨터에서는 그 컴퓨터의 기기 코드로 새 키를 받아야 해요.</p>
+    </div>
+  </div>
+
+  <!-- ===== 서버 연결 대기 화면 — 로컬 서버가 아직 안 켜졌을 때. 몇 초마다 자동으로 다시 확인한다 ===== -->
+  <div id="serverWait" class="lic-gate" hidden>
+    <div class="lic-gate-card">
+      <div class="lic-gate-word">AutoCaption</div>
+      <div class="lic-gate-title">로컬 서버에 연결하는 중…</div>
+      <p id="serverWaitMsg" class="lic-gate-msg" role="status" aria-live="polite"></p>
+      <button id="serverWaitRetry" type="button" class="primary wide">지금 다시 확인</button>
+      <p class="lic-gate-foot">컴퓨터를 켠 직후에는 서버가 켜지는 데 시간이 걸릴 수 있어요. 1분이 지나도 연결되지 않으면 %LOCALAPPDATA%\AutoCaption\server 폴더의 start-server.bat을 더블클릭하세요.</p>
+    </div>
+  </div>
+
+  <div id="appRoot" hidden>
+  <div id="status-bar">대기 중</div>
+
+  <!-- 자동 업데이트 띠: 새 버전이 있을 때만 보인다 -->
+  <div id="updateBanner" class="update-banner" hidden>
+    <span id="updateBannerText"></span>
+    <button id="updateBannerBtn" type="button" class="primary"></button>
+  </div>
+
+  <div class="tab-bar" id="tabBar">
+    <button class="tab-btn active" data-tab="create">자막 생성</button>
+    <button class="tab-btn" data-tab="dict">고유명사</button>
+    <button class="tab-btn" data-tab="review">검수</button>
+    <button class="tab-btn" data-tab="audio">오디오</button>
+    <button class="tab-btn" data-tab="key">API 키</button>
+  </div>
+
+  <div class="settings-scroll" id="settingsScroll">
+
+    <!-- ===== 탭 1: 자막 생성 ===== -->
+    <div class="tab-content active" data-tab="create">
+      <div class="group">
+        <div class="group-title">기본 설정</div>
+        <details class="tip">
+          <summary>설명 보기</summary>
+          <p class="hint">현재 프로젝트/배경 설명은 Whisper 인식 + AI 교정·번역 힌트로 쓰이고, 고유명사 사전에서 "적용 프로젝트"를 지정해둔 항목은 여기 입력한 프로젝트명과 일치할 때만 힌트로 사용됩니다 (프로젝트 미지정 항목은 항상 공통 적용).</p>
+        </details>
+        <section class="row">
+          <label>현재 프로젝트/현장</label>
+          <input type="text" id="projectName" list="projectNameList" placeholder="예: 세레노 삼성" style="flex:1;">
+          <datalist id="projectNameList"></datalist>
+        </section>
+        <section class="row">
+          <label>영상 배경 설명</label>
+          <input type="text" id="videoContext" placeholder="예: 대명건설이 시행/시공하는 세레노 삼성 분양 현장 인터뷰" style="flex:1;">
+        </section>
+
+        <section class="row">
+          <label>인식 언어</label>
+          <select id="srcLang">
+            <option value="ko" selected>한국어</option>
+            <option value="en">영어</option>
+          </select>
+          <button id="btnRefreshTracks" title="트랙 목록 새로고침 (화자 분리/클리핑 검사용 트랙 목록)">↻</button>
+        </section>
+        <!-- 대상 트랙은 더 이상 직접 고르지 않음: 화자 분리를 쓰면 각 화자 트랙, 아니면
+             클립이 있는 오디오 트랙을 자동으로 찾아서 씀 (main.js의 autoDetectSourceTrack). -->
+        <p class="hint">대상 트랙은 자동으로 감지됩니다 — 화자 분리를 켜면 각 화자 트랙별로, 끄면 소스가 있는(클립이 있는) 오디오 트랙을 기준으로 처리됩니다.</p>
+        <section class="row">
+          <label>자동 감지 제외 트랙</label>
+          <div id="excludeTrackList"><!-- JS로 채움 --></div>
+        </section>
+        <p class="hint">배경음악처럼 클립은 있지만 대본으로 인식하면 안 되는 트랙을 체크해두면, 화자 분리를 안 쓸 때의 자동 감지에서 건너뜁니다. (화자 분리를 쓸 때는 체크한 화자 트랙만 쓰이므로 이 설정과 무관합니다.)</p>
+
+        <p id="noApiNotice" class="hint no-api-notice" hidden>API 키 없이 자막만 만듭니다 (무료). AI 교정과 번역을 쓰려면 "API 키" 탭에 Claude API 키를 넣으세요.</p>
+        <section class="row toggles">
+          <label><input type="checkbox" id="aiCorrectionToggle" checked> AI 문맥 교정 사용 (Claude API, 비용 발생)</label>
+        </section>
+        <section class="row toggles">
+          <label><input type="checkbox" id="compoundSpacingToggle"> 복합명사 띄어쓰기 적용 (예: 주차공간→주차 공간) — 프로젝트 스타일에 맞을 때만 켜세요</label>
+        </section>
+
+        <section class="row">
+          <label>마커 색상</label>
+          <select id="markerColor">
+            <option value="2" selected>Purple</option>
+            <option value="4">Yellow</option>
+            <option value="0">Green</option>
+            <option value="5">White</option>
+            <option value="6">Blue</option>
+            <option value="7">Teal</option>
+          </select>
+        </section>
+
+        <!-- 프리셋이 플러그인에 내장되어 자동으로 쓰이므로 평소엔 숨김 (다른 프리셋을
+             쓰고 싶을 때만 필요 - main.js의 btnPickPreset 로직은 그대로 남겨둠) -->
+        <section class="row" hidden>
+          <label>오디오 전용 export 프리셋(.epr)</label>
+          <button id="btnPickPreset">파일 선택...</button>
+          <span id="presetPathDisplay" class="hint">(선택 안 됨)</span>
+        </section>
+      </div>
+
+      <div class="group">
+        <div class="group-title">화자 분리</div>
+        <section class="row toggles">
+          <label><input type="checkbox" id="speakerSeparationToggle"> 화자 분리 모드 (오디오 트랙별 별도 캡션)</label>
+        </section>
+        <section class="row" id="speakerTrackRow" style="display:none;">
+          <div id="speakerTrackList"><!-- JS로 채움 --></div>
+        </section>
+      </div>
+
+      <div class="group">
+        <div class="group-title">번역 자막</div>
+        <details class="tip">
+          <summary>설명 보기</summary>
+          <p class="hint">Claude API 호출, 비용 발생 — 선택한 언어마다 별도 캡션 트랙 생성. 아래에서 체크한 언어는 "인식할 때 같이 번역"과 "따로 번역" 두 곳에 모두 쓰입니다.</p>
+        </details>
+        <section class="row" id="translationLangList">
+          <label><input type="checkbox" class="translateLangOption" value="en" data-label="영어"> 영어</label>
+          <label><input type="checkbox" class="translateLangOption" value="ja" data-label="일본어"> 일본어</label>
+          <label><input type="checkbox" class="translateLangOption" value="zh-CN" data-label="중국어(간체)"> 중국어(간체)</label>
+        </section>
+        <section class="row toggles">
+          <label><input type="checkbox" id="translateStripPunct"> 번역문 줄 끝 마침표·쉼표 제거 (물음표·느낌표는 유지)</label>
+        </section>
+        <section class="row toggles">
+          <label><input type="checkbox" id="translateWithRecognition" checked> 인식할 때 같이 번역 ([인식 시작]을 누르면 위 언어로 바로 번역)</label>
+        </section>
+      </div>
+
+      <div class="group">
+        <div class="group-title">따로 번역 (SRT 파일)</div>
+        <details class="tip">
+          <summary>설명 보기</summary>
+          <p class="hint">이미 만든 자막이나 직접 고친 완성본 SRT를 골라, 위 "번역 자막"에서 체크한 언어로 번역합니다. 번역 파일은 프로젝트 옆 "AutoCaption 자막" 폴더에 저장됩니다. 유튜브 자막 업로드용 파일을 만들 때 쓰세요.</p>
+        </details>
+        <section class="row">
+          <button id="btnPickTranslateFiles">SRT 파일 선택... (여러 개 가능)</button>
+        </section>
+        <p class="hint" id="translateFilesDisplay">(선택 안 됨)</p>
+        <section class="row toggles">
+          <label><input type="checkbox" id="translateImportToggle" checked> Premiere로 가져오기 (Auto Caption bin)</label>
+        </section>
+        <section class="row">
+          <button id="btnRunTranslateFiles" class="primary">번역 시작</button>
+        </section>
+      </div>
+    </div>
+
+    <!-- ===== 탭 2: 고유명사 ===== -->
+    <div class="tab-content" data-tab="dict">
+      <div class="group">
+        <div class="group-title">고유명사 사전 관리</div>
+        <details class="tip">
+          <summary>설명 보기</summary>
+          <p class="hint">번역 표기 고정 + Whisper/AI 인식·교정 힌트 — 한글만 등록해도 됨. 특정 프로젝트에서만 쓰이는 단어는 "적용 프로젝트"에 프로젝트명을 적어두면, 그 프로젝트로 작업할 때만 힌트로 사용됩니다.</p>
+        </details>
+        <section class="row">
+          <input type="text" id="pnKo" placeholder="한국어 원어 (예: 깨알집식)" style="flex:1;">
+        </section>
+        <section class="row">
+          <input type="text" id="pnProject" list="projectNameList" placeholder="적용 프로젝트 (비워두면 모든 프로젝트 공통)" style="flex:1;">
+        </section>
+        <section class="row">
+          <input type="text" id="pnEn" placeholder="영어" style="flex:1;">
+          <input type="text" id="pnJa" placeholder="일본어" style="flex:1;">
+          <input type="text" id="pnZh" placeholder="중국어(간체)" style="flex:1;">
+        </section>
+        <section class="row">
+          <button id="btnRegisterProperNoun">고유명사 등록</button>
+          <button id="btnViewProperNouns">등록된 고유명사 확인</button>
+        </section>
+        <div id="properNounList" style="display:none;"></div>
+      </div>
+    </div>
+
+    <!-- ===== 탭 3: 검수 (맞춤법 검사 + 자막 비교) ===== -->
+    <div class="tab-content" data-tab="review">
+      <div class="group">
+        <div class="group-title">맞춤법 검사 (텍스트/SRT 파일)</div>
+        <details class="tip">
+          <summary>설명 보기</summary>
+          <p class="hint">캡션과 무관하게, .txt 또는 .srt 파일을 하나 이상(예: 화자별 result_1.srt, result_2.srt) 선택해서 맞춤법/문법을 검사합니다. 타임코드가 있는 파일이면 결과에 타임코드로 표시됩니다. 반복되는 문장은 한 번만 검사해서 재사용합니다. Premiere 캡션은 API로 직접 수정할 수 없어서, 여기서 확인한 내용은 캡션 패널에서 직접 고쳐야 합니다.</p>
+        </details>
+        <section class="row">
+          <button id="btnPickSpellcheckFile">파일 선택... (여러 개 가능)</button>
+          <span id="spellcheckFilePathDisplay" class="hint">(선택 안 됨)</span>
+        </section>
+        <section class="row toggles">
+          <label><input type="checkbox" id="spellcheckCheckPeriod"> 문장 끝 온점(.) 누락도 검사 (기본은 자막 스타일상 무시)</label>
+        </section>
+        <section class="row">
+          <button id="btnRunSpellcheck">맞춤법 검사 시작</button>
+          <button id="btnCopySpellcheckResult">결과 복사</button>
+        </section>
+        <div id="spellcheckResult" style="display:none;"></div>
+      </div>
+
+      <div class="group">
+        <div class="group-title">자막 비교 (원본 vs 완성본)</div>
+        <details class="tip">
+          <summary>설명 보기</summary>
+          <p class="hint">플러그인이 처음 뽑은 원본 결과 파일과, 직접 수정해서 완성한 최종본을 비교해서 추가/삭제/수정된 부분만 보여줍니다. AI 판단 없이 순수 텍스트 비교라 정확합니다.</p>
+        </details>
+        <section class="row">
+          <button id="btnPickBaseFile">원본(플러그인 결과) 선택... (여러 개 가능)</button>
+          <span id="baseFilePathDisplay" class="hint">(선택 안 됨)</span>
+        </section>
+        <section class="row">
+          <button id="btnPickTargetFile">완성본(직접 수정한 버전) 선택...</button>
+          <span id="targetFilePathDisplay" class="hint">(선택 안 됨)</span>
+        </section>
+        <section class="row toggles">
+          <label><input type="checkbox" id="compareWordLevel"> 컷을 다시 나누거나 합치며 편집했다면 체크 (캡션 구성 무시하고 전체 내용만 비교)</label>
+        </section>
+        <section class="row">
+          <button id="btnRunCompare">비교 시작</button>
+          <button id="btnCopyCompareResult">결과 복사</button>
+        </section>
+        <div id="compareResult" style="display:none;"></div>
+      </div>
+    </div>
+
+    <!-- ===== 탭 4: 오디오 ===== -->
+    <div class="tab-content" data-tab="audio">
+      <div class="group">
+        <div class="group-title">오디오 레벨 확인 (자막 작업과 무관한 별도 도구)</div>
+        <details class="tip">
+          <summary>설명 보기</summary>
+          <p class="hint">여기서 뜨는 마커는 "확정된 클리핑"이 아니라 "0dB에 가까우니 직접 들어보고 확인해볼 만하다"는 힌트입니다. 리미터/노멀라이저가 걸린 트랙에서는 정상적인 소리도 0dB에 자주 닿을 수 있고, 반대로 녹음 단계(아날로그)에서 이미 찌그러진 소리는 여기서 안 잡힐 수 있습니다.</p>
+          <p class="hint">아래에서 트랙을 체크하면 그 트랙들을 각각 솔로로 따로 검사합니다 (여러 트랙이 동시에 소리 날 때 합쳐진 레벨로 오탐 나는 것 방지). 아무것도 체크 안 하면 전체 믹스 기준으로 검사합니다. — 자막 생성 탭의 화자 분리 트랙 체크박스와는 별개입니다.</p>
+        </details>
+        <section class="row">
+          <button id="btnClippingOnly">오디오 레벨 확인 (인식/번역 없이)</button>
+        </section>
+        <section class="row toggles">
+          <label><input type="checkbox" id="clippingIncludeWarn"> -1dB 근접 구간도 표시 (기본은 0dB 근접만 표시)</label>
+        </section>
+        <section class="row" id="clippingTrackRow">
+          <div id="clippingTrackList"><!-- JS로 채움 --></div>
+        </section>
+      </div>
+    </div>
+
+    <!-- ===== 탭 5: API 키 ===== -->
+    <div class="tab-content" data-tab="key">
+      <div class="group">
+        <div class="group-title">Claude API 키</div>
+        <details class="tip">
+          <summary>설명 보기</summary>
+          <p class="hint">본인 Anthropic 계정에서 발급받은 키를 입력하세요 (console.anthropic.com). 이 컴퓨터에만 저장되고, 사용한 만큼 본인 계정으로 과금됩니다.</p>
+        </details>
+        <section class="row">
+          <input type="password" id="claudeApiKey" placeholder="sk-ant-api03-..." style="flex:1;" autocomplete="off">
+          <button id="btnToggleApiKeyVisibility" title="키 보기/숨기기">👁</button>
+        </section>
+      </div>
+
+      <div class="group" id="licenseMgmtGroup">
+        <div class="group-title">라이선스 관리</div>
+        <p class="hint">이 컴퓨터에 등록된 라이선스 키를 삭제합니다. 다른 컴퓨터로 옮기거나 재등록해야 할 때 사용하세요 — 삭제 후 패널을 다시 열면 라이선스 등록 화면이 다시 나타납니다.</p>
+        <section class="row">
+          <button id="btnDeleteLicense" class="danger">라이선스 삭제</button>
+        </section>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="resize-handle" id="resizeHandle" title="드래그해서 위/아래 비율 조절"></div>
+
+  <div class="actions">
+    <button id="btnStart" class="primary">인식 시작</button>
+    <button id="btnStop" class="danger" style="display:none;">중단</button>
+    <button id="btnCopyLog">로그 전체 복사</button>
+    <button id="btnRevealLast" hidden title="방금 만든 자막 파일을 탐색기에서 선택된 상태로 엽니다">파일 위치 열기</button>
+    <button id="btnOpenOutputFolder" title="이 프로젝트의 자막 폴더(AutoCaption 자막)를 탐색기로 엽니다">자막 폴더 열기</button>
+  </div>
+
+  <div id="log"></div>
+
+  </div> <!-- /#appRoot -->
+
+  <script src="main.js"></script>
+</body>
+</html>

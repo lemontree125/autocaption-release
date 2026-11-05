@@ -1,0 +1,429 @@
+html, body {
+  height: 100%;
+}
+body {
+  background: #1e1e24;
+  color: #eee;
+  font-family: "Malgun Gothic", sans-serif;
+  font-size: 12px;
+  margin: 0;
+  padding: 10px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* 패널 전체가 아니라 아래 각 영역이 알아서 스크롤됨 */
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+/* 상단 상태바: 항상 고정 */
+#status-bar {
+  flex: 0 0 auto;
+  background: #2b2b33;
+  padding: 6px 10px;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+/* 자동 업데이트 띠 */
+.update-banner {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  margin-bottom: 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(123, 92, 255, 0.5);
+  background: rgba(123, 92, 255, 0.12);
+  font-size: 11px;
+}
+.update-banner span { flex: 1; word-break: keep-all; }
+.update-banner[hidden] { display: none !important; }
+.update-banner button[hidden] { display: none !important; }
+
+/* 설정 항목들: 고정 높이(드래그로 조절 가능)로 스크롤되고, 로그 자리는 항상 확보됨 */
+.settings-scroll {
+  flex: 0 0 auto;
+  height: 260px; /* 기본값 - main.js가 localStorage에 저장된 값으로 덮어씀 */
+  min-height: 60px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+/* 설정 영역과 로그 사이의 드래그 핸들 */
+.resize-handle {
+  flex: 0 0 auto;
+  height: 12px;
+  margin: 2px 0;
+  cursor: row-resize;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.resize-handle::before {
+  content: "";
+  width: 48px;
+  height: 4px;
+  border-radius: 2px;
+  background: #3a3a44;
+  transition: background 0.1s ease;
+}
+.resize-handle:hover::before,
+.resize-handle.dragging::before {
+  background: #7b5cff;
+}
+
+/* 관련 설정을 묶는 카드형 그룹 */
+.group {
+  border: 1px solid #35353d;
+  border-radius: 6px;
+  padding: 8px 10px 10px;
+  margin-bottom: 8px;
+  background: #24242b;
+}
+.group-title {
+  font-weight: bold;
+  font-size: 11px;
+  color: #b9aaff;
+  margin-bottom: 6px;
+  letter-spacing: 0.2px;
+}
+/* <details>로 감싼 그룹(고유명사 사전): 기본은 접힌 상태 */
+details.group {
+  padding: 0;
+}
+details.group summary {
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 11px;
+  color: #b9aaff;
+  padding: 8px 10px;
+  list-style: none;
+}
+details.group summary::-webkit-details-marker { display: none; }
+details.group summary::before {
+  content: "▸ ";
+  display: inline-block;
+  transition: transform 0.1s ease;
+}
+details.group[open] summary::before {
+  content: "▾ ";
+}
+details.group > *:not(summary) {
+  padding-left: 10px;
+  padding-right: 10px;
+}
+details.group > *:last-child {
+  padding-bottom: 10px;
+}
+
+.hint {
+  font-size: 11px;
+  color: #999;
+  margin: 0 0 8px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+/* .lic-gate 때와 같은 버그: [hidden]과 .row의 display:flex가 명시도가 같아서
+   그냥 두면 이 규칙이 이겨버려 hidden 속성을 줘도 안 사라진다. */
+.row[hidden] {
+  display: none;
+}
+.row:last-child {
+  margin-bottom: 0;
+}
+select, button, input {
+  background: #2b2b33;
+  color: #eee;
+  border: 1px solid #444;
+  border-radius: 4px;
+  padding: 4px 6px;
+}
+
+/* 하단 액션 버튼줄: 항상 고정, 스크롤 영역 밖 */
+.actions {
+  flex: 0 0 auto;
+  display: flex;
+  flex-wrap: wrap; /* 버튼이 늘어서 좁은 패널에서도 줄바꿈되게 */
+  gap: 8px;
+  margin: 8px 0;
+}
+/* UXP에서 [hidden]이 버튼 display를 이기지 못하는 경우가 있어 명시 */
+.actions button[hidden] { display: none !important; }
+.actions .primary,
+.actions .danger {
+  flex: 1;
+}
+button.primary {
+  background: #7b5cff;
+  border: none;
+  padding: 8px;
+  font-weight: bold;
+  cursor: pointer;
+}
+button.danger {
+  background: #a83a3a;
+  border: none;
+  padding: 8px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* 로그: 항상 남은 공간을 꽉 채우고, 내부에서만 스크롤 */
+#log {
+  flex: 1 1 auto;
+  min-height: 70px;
+  white-space: pre-wrap;
+  font-size: 11px;
+  color: #aaa;
+  background: #17171c;
+  border: 1px solid #333;
+  border-radius: 4px;
+  padding: 8px;
+  overflow-y: auto;
+  user-select: text;
+  -webkit-user-select: text;
+  cursor: text;
+}
+
+#properNounList {
+  white-space: pre-wrap;
+  font-size: 11px;
+  color: #ddd;
+  background: #2b2b33;
+  border-radius: 4px;
+  padding: 6px 8px;
+  margin-bottom: 8px;
+  max-height: 150px;
+  overflow-y: auto;
+  user-select: text;
+  -webkit-user-select: text;
+}
+#spellcheckResult {
+  white-space: pre-wrap;
+  font-size: 11px;
+  color: #ddd;
+  background: #2b2b33;
+  border-radius: 4px;
+  padding: 6px 8px;
+  margin-bottom: 8px;
+  max-height: 300px;
+  overflow-y: auto;
+  user-select: text;
+  -webkit-user-select: text;
+}
+#compareResult {
+  white-space: pre-wrap;
+  font-size: 11px;
+  color: #ddd;
+  background: #2b2b33;
+  border-radius: 4px;
+  padding: 6px 8px;
+  margin-bottom: 8px;
+  max-height: 300px;
+  overflow-y: auto;
+  user-select: text;
+  -webkit-user-select: text;
+}
+#speakerTrackList,
+#excludeTrackList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+}
+#speakerTrackList label,
+#excludeTrackList label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ===== 탭 ===== */
+.tab-bar {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+.tab-btn {
+  flex: 1;
+  padding: 6px 4px;
+  font-size: 11px;
+  background: #2b2b33;
+  color: #aaa;
+  border: 1px solid #35353d;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.tab-btn.active {
+  background: #7b5cff;
+  color: #fff;
+  border-color: #7b5cff;
+  font-weight: bold;
+}
+.tab-content {
+  display: none;
+}
+.tab-content.active {
+  display: block;
+}
+
+/* 긴 설명 문구는 접어서 세로 공간 절약 */
+details.tip {
+  margin: 0 0 8px;
+}
+details.tip summary {
+  cursor: pointer;
+  font-size: 11px;
+  color: #999;
+  list-style: none;
+}
+details.tip summary::-webkit-details-marker { display: none; }
+details.tip summary::before { content: "ⓘ "; }
+details.tip[open] summary { margin-bottom: 4px; }
+details.tip .hint { margin-bottom: 6px; }
+
+/* ===== 라이선스 등록 화면 ===== */
+.lic-gate {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 24px 14px;
+}
+/* [hidden]과 .lic-gate의 display:flex는 CSS 명시도가 같아서, 그냥 두면
+   나중에 나오는 이 클래스 규칙이 이겨버려 JS에서 hidden=true를 줘도
+   화면이 안 사라지는 버그가 있었음 - 명시도를 더 높여서 확실히 이기게 함. */
+.lic-gate[hidden] {
+  display: none;
+}
+.lic-gate-card {
+  width: 100%;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.lic-gate-word {
+  font-size: 18px;
+  font-weight: 700;
+  color: #eee;
+  letter-spacing: 0.02em;
+}
+.lic-gate-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #eee;
+  margin: 2px 0 6px;
+  word-break: keep-all;
+}
+.lic-gstep {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  font-size: 11.5px;
+  color: #ccc;
+  word-break: keep-all;
+  margin-top: 4px;
+}
+.lic-num {
+  flex: 0 0 auto;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: #eee;
+  border: 1px solid #7b5cff;
+  box-shadow: 0 0 10px rgba(123, 92, 255, 0.35);
+  margin-top: 1px;
+}
+.lic-code {
+  display: flex;
+  gap: 6px;
+  align-items: stretch;
+}
+.lic-code code {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: #2b2b33;
+  border: 1px solid #444;
+  font-family: Consolas, Menlo, monospace;
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  color: #eee;
+  text-align: center;
+  cursor: text;
+  user-select: text;
+  -webkit-user-select: text;
+}
+#licGateKey {
+  width: 100%;
+  resize: vertical;
+  min-height: 64px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: #17171c;
+  border: 1px solid #444;
+  color: #eee;
+  font-family: Consolas, Menlo, monospace;
+  font-size: 11px;
+  line-height: 1.4;
+  outline: none;
+  word-break: break-all;
+  box-sizing: border-box;
+}
+#licGateKey:focus {
+  border-color: #7b5cff;
+  box-shadow: 0 0 0 2px rgba(123, 92, 255, 0.35);
+}
+#licGateKey::placeholder {
+  color: #777;
+  font-family: "Malgun Gothic", sans-serif;
+}
+.lic-gate-msg {
+  font-size: 11px;
+  line-height: 1.5;
+  word-break: keep-all;
+  min-height: 1px;
+}
+.lic-gate-msg:empty { display: none; }
+.lic-gate-msg.err {
+  color: #ff8383;
+  padding: 6px 9px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 131, 131, 0.28);
+  background: rgba(255, 131, 131, 0.08);
+}
+.lic-gate-msg.ok { color: #7bdc8f; }
+/* [hidden]과 .hint의 display가 겹치지 않도록 명시 (위 .lic-gate[hidden]과 같은 이유) */
+.no-api-notice[hidden] { display: none !important; }
+.no-api-notice {
+  color: #7bdc8f;
+  padding: 6px 9px;
+  border-radius: 6px;
+  border: 1px solid rgba(123, 220, 143, 0.28);
+  background: rgba(123, 220, 143, 0.08);
+}
+.lic-gate-foot {
+  font-size: 10.5px;
+  color: #888;
+  word-break: keep-all;
+  margin-top: 4px;
+}
+button.wide { width: 100%; }
