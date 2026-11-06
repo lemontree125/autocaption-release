@@ -1,0 +1,28 @@
+{
+  "id": "com.haru.autocaption",
+  "name": "AutoCaption",
+  "version": "1.1.1",
+  "main": "index.html",
+  "manifestVersion": 5,
+  "host": {
+    "app": "premierepro",
+    "minVersion": "25.6.0"
+  },
+  "entrypoints": [
+    {
+      "type": "panel",
+      "id": "autoCaptionPanel",
+      "label": { "default": "AutoCaption" },
+      "minimumSize": { "width": 300, "height": 400 },
+      "preferredDockedSize": { "width": 380, "height": 700 },
+      "preferredFloatingSize": { "width": 380, "height": 700 }
+    }
+  ],
+  "requiredPermissions": {
+    "network": {
+      "domains": ["http://localhost:8934", "http://127.0.0.1:8934"]
+    },
+    "localFileSystem": "request",
+    "clipboard": "readAndWrite"
+  }
+}

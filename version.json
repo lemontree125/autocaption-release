@@ -1,12 +1,12 @@
 {
-  "v": "1.1.0",
-  "note": "v1.1.0: 인증 없이 사용, API 키 없이 자막만 만들기, 새 AI 모델, 자막 폴더·bin 정리, SRT 따로 번역, 자동 업데이트",
+  "v": "1.1.1",
+  "note": "v1.1.1: VBScript 없는 PC에서도 동작, 설치 결과를 정확히 안내, 필요한 프로그램 자동 설치 개선, AI 교정 없이 반복되는 구절 정리",
   "installer": 1,
   "released": "2026-11-06",
   "files": [
     {
       "path": "server/app-version.json",
-      "sha256": "b16e7e824e4fd9815f2a177c1bd5089956cbf7b846c3a1c7838a865afdf4a747"
+      "sha256": "500153fc0818cfaeec2bfcd02248a0bdc8d138c5646fe8e9341e8f5b2ac55b41"
     },
     {
       "path": "server/pipeline/dictionary.json",
@@ -54,11 +54,15 @@
     },
     {
       "path": "server/pipeline/whisper-pipeline.js",
-      "sha256": "60bd1d7b8cb7f4163f6099b28bede2268cb2567d83666f756751986b2774bb95"
+      "sha256": "d417d063b9307b5fe006720e5047a4f26cf41bb440d6fe596b128171e4388abd"
     },
     {
       "path": "server/server.js",
-      "sha256": "8abfbd22de6f2b1022c4eadd0015b8960a7fab368b2a97c5675067ba2fba0255"
+      "sha256": "b4b42c202886461e0699f665f9173ecd8b98f7d39bc66cb10971e8f98ade1368"
+    },
+    {
+      "path": "server/start-server-hidden.ps1",
+      "sha256": "dc1e9a68b06abdf5fb0745f4895eb78ef4a860e4924a3175c9157b9e50cdf825"
     },
     {
       "path": "server/start-server.bat",
@@ -66,11 +70,11 @@
     },
     {
       "path": "server/updater.js",
-      "sha256": "6b32802856b8e0c4eccfc755c33d604a63cddb4ab963e328d4e85a4d83ad67d5"
+      "sha256": "bf04d17832407bac9db9301bc9ce7c12f94d493088457ef1e6a29d81fe7e8a92"
     },
     {
       "path": "server/updater.ps1",
-      "sha256": "34cfcbeb074bde57badc9c66d3c26b59d782dd1d4a33d0c6fda5cfdf3134d8b6"
+      "sha256": "f3b3b67a55b3b3bcaa75b74d030ec41aeabfab9e1f231a5b0fdf4280990adb1b"
     },
     {
       "path": "plugin/index.html",
@@ -78,11 +82,11 @@
     },
     {
       "path": "plugin/main.js",
-      "sha256": "fb9a1edd59eb72239cc8ce048a014d8411109d7f31a29d708cf298f6ad43d93f"
+      "sha256": "896d5ba6868784db8d513a05410dac026533adf2dac8a66968b1b2e869b15dd6"
     },
     {
       "path": "plugin/manifest.json",
-      "sha256": "767d03ad34a505df3769c3407b85885f9d834e8f954438a8625bddbc4fb8f756"
+      "sha256": "8886fd96a1aee8dc5a7f08c81ef4dfa30d108e09f49ef3dc7962712b1e47530a"
     },
     {
       "path": "plugin/presets/audio_only.epr",
