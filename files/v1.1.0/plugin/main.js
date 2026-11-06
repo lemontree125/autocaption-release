@@ -1,5 +1,11 @@
 // main.js - UXP 패널 로직
 
+// UXP에서는 비어 있는 input의 .value가 ""가 아니라 null로 나온다 (UDT 콘솔에서 확인).
+// 그래서 .value.trim()을 바로 부르면 "Cannot read properties of null (reading 'trim')"이 난다.
+// 입력칸 값은 항상 이 함수로 읽는다.
+function textOf(el) { return el ? String(el.value ?? "").trim() : ""; }
+function val(id) { return textOf(document.getElementById(id)); }
+
 // 스크립트 맨 위(require 등)에서 뭔가 터지면 라이선스 게이트 화면이
 // "확인 중…" 상태로 영원히 멈춰버리고 원인도 안 보였다. 그래서 가장
 // 먼저, 어떤 에러든 기기 코드 칸에 직접 찍히게 걸어둔다.
@@ -171,7 +177,7 @@ async function restoreSettings() {
 }
 
 document.getElementById("claudeApiKey").addEventListener("change", (e) => {
-  localStorage.setItem("autocaption_apiKey", e.target.value.trim());
+  localStorage.setItem("autocaption_apiKey", textOf(e.target));
 });
 document.getElementById("btnToggleApiKeyVisibility").addEventListener("click", () => {
   const input = document.getElementById("claudeApiKey");
@@ -198,7 +204,7 @@ document.getElementById("btnDeleteLicense").addEventListener("click", async () =
 });
 
 document.getElementById("projectName").addEventListener("change", (e) => {
-  localStorage.setItem("autocaption_projectName", e.target.value.trim());
+  localStorage.setItem("autocaption_projectName", textOf(e.target));
 });
 
 async function refreshProjectList() {
@@ -274,9 +280,9 @@ document.getElementById("btnRunSpellcheck").addEventListener("click", async () =
       log("✘ 로컬 서버(http://localhost:8934)에 연결할 수 없습니다. start-server.bat을 먼저 실행해주세요.");
       return;
     }
-    const projectName = document.getElementById("projectName").value.trim();
-    const videoContext = document.getElementById("videoContext").value.trim();
-    const apiKey = document.getElementById("claudeApiKey").value.trim();
+    const projectName = val("projectName");
+    const videoContext = val("videoContext");
+    const apiKey = val("claudeApiKey");
     const checkPeriod = document.getElementById("spellcheckCheckPeriod").checked;
 
     setStatus("맞춤법 검사 중...");
@@ -519,7 +525,7 @@ async function currentOutputInfoForFolder() {
   } catch (e) {
     // 열린 프로젝트가 없으면 문서\AutoCaption 쪽 폴더를 연다
   }
-  return { projectFilePath, outputName: document.getElementById("projectName").value.trim(), speakerNum: null };
+  return { projectFilePath, outputName: val("projectName"), speakerNum: null };
 }
 
 document.getElementById("btnRevealLast").addEventListener("click", async () => {
@@ -842,9 +848,9 @@ document.getElementById("btnRunTranslateFiles").addEventListener("click", async 
     if (importResult && !project) log("⚠ 열린 Premiere 프로젝트가 없어 가져오기 없이 파일만 저장합니다.");
 
     const opts = {
-      projectName: document.getElementById("projectName").value.trim(),
-      videoContext: document.getElementById("videoContext").value.trim(),
-      apiKey: document.getElementById("claudeApiKey").value.trim(),
+      projectName: val("projectName"),
+      videoContext: val("videoContext"),
+      apiKey: val("claudeApiKey"),
       projectFilePath: project ? (project.path || "") : "",
       importResult,
       fileSuffix: "",
@@ -1066,9 +1072,9 @@ async function runPipeline() {
     const presetPath = selectedPresetEntry.nativePath;
 
     const lang = document.getElementById("srcLang").value;
-    const projectName = document.getElementById("projectName").value.trim();
-    const videoContext = document.getElementById("videoContext").value.trim();
-    const apiKey = document.getElementById("claudeApiKey").value.trim();
+    const projectName = val("projectName");
+    const videoContext = val("videoContext");
+    const apiKey = val("claudeApiKey");
     const noApiMode = !hasApiKey();
     if (noApiMode) {
       log("ℹ API 키 없이 자막만 만듭니다 (AI 교정·번역 없음, 무료).");
@@ -1254,11 +1260,11 @@ document.getElementById("btnRegisterProperNoun").addEventListener("click", async
   const enInput = document.getElementById("pnEn");
   const jaInput = document.getElementById("pnJa");
   const zhInput = document.getElementById("pnZh");
-  const ko = koInput.value.trim();
-  const pnProject = projectInput.value.trim();
-  const en = enInput.value.trim();
-  const ja = jaInput.value.trim();
-  const zhCN = zhInput.value.trim();
+  const ko = textOf(koInput);
+  const pnProject = textOf(projectInput);
+  const en = textOf(enInput);
+  const ja = textOf(jaInput);
+  const zhCN = textOf(zhInput);
 
   if (!ko) { log("✘ 고유명사(한국어 원어)를 입력해주세요."); return; }
 
@@ -1391,7 +1397,7 @@ async function copyTextToClipboard(text) {
 let serverHasDefaultKey = false;
 
 function hasApiKey() {
-  return serverHasDefaultKey || !!document.getElementById("claudeApiKey").value.trim();
+  return serverHasDefaultKey || !!val("claudeApiKey");
 }
 
 function applyApiMode() {
@@ -1534,10 +1540,10 @@ function showLicenseGate(info) {
   };
 
   document.getElementById("licGateOk").onclick = async () => {
-    const key = document.getElementById("licGateKey").value;
-    if (!key.trim()) { say("받은 키를 위 칸에 붙여넣어주세요.", "err"); return; }
+    const key = val("licGateKey");
+    if (!key) { say("받은 키를 위 칸에 붙여넣어주세요.", "err"); return; }
     try {
-      const r = await serverPost("/api/license", { key: key.trim() });
+      const r = await serverPost("/api/license", { key });
       if (!r.ok) { say(r.message || "등록에 실패했습니다.", "err"); return; }
       startApp();
     } catch (e) {

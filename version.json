@@ -1,8 +1,8 @@
 {
   "v": "1.1.0",
-  "note": "자동 업데이트, API 없이 쓰기, 자막 저장 위치·bin, 따로 번역",
+  "note": "v1.1.0: 인증 없이 사용, API 키 없이 자막만 만들기, 새 AI 모델, 자막 폴더·bin 정리, SRT 따로 번역, 자동 업데이트",
   "installer": 1,
-  "released": "2026-11-05",
+  "released": "2026-11-06",
   "files": [
     {
       "path": "server/app-version.json",
@@ -78,7 +78,7 @@
     },
     {
       "path": "plugin/main.js",
-      "sha256": "436a0d4cf361f746762311c0dae0273c3e14935352a956ef2bf553f47c0e40da"
+      "sha256": "fb9a1edd59eb72239cc8ce048a014d8411109d7f31a29d708cf298f6ad43d93f"
     },
     {
       "path": "plugin/manifest.json",
